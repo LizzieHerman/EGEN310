@@ -25,8 +25,8 @@ EGEN 310 Group F.6 Fall Semester 2018 Cat's Conundrum
 
   * The bar on the right hand side is a slider that will change the speed meter and send data to the Microcontroller in the range of 0 (bottom of screen) to 180 (top of screen)
 
-  * The square in the top left corner of the screen registers if BLE is connected (blue) dissconected (red) or not yet set up (yellow/orange)
+  * The square in the top left corner of the screen registers if BLE is connected (blue) dissconected (red) or not yet set up (yellow)
 
-  * After the start button is clicked it changes to a STOP button which, when clicked, will reset both speed and turn meters and send out the signal 90 (a full stop) for both
+  * After the START button is clicked it changes to a STOP button which, when clicked, will reset both speed and turn meters and send out the signal 90 (a full stop) for both
 
-  * The x in the top corner disconects Bluetooth and closes the app
+  * The X in the top corner disconects Bluetooth and closes the app
