@@ -100,8 +100,8 @@ extern uint8_t packetbuffer[];
 
 Adafruit_Crickit crickit;
 
-seesaw_Servo left(&crickit);
-seesaw_Servo right(&crickit);
+seesaw_Servo left(&crickit); // both servos rotation reversed
+seesaw_Servo right(&crickit); // both servos rotation reversed
 int leftvel = 90; // range 0 - 180; 0: full speed backward, 90: stop, 180: full speed forward
 int rightvel = 90; // Adafruit's Continuous Rotation Servo PID: 154
 float velocity = 0; // the average velocity of both motors
@@ -193,6 +193,7 @@ void setup(void)
     Serial.println("Right Servo Attached.");
     right.write(90);
   } else Serial.println("Right Servo Not Attached.");
+
 }
 
 /**************************************************************************/
@@ -220,16 +221,16 @@ void loop(void)
           Serial.println(" pressed.");
           if(velocity >= 10){ // check if the car is at top speed
             Serial.println("Car cannot go any faster");
-          } else if(leftvel >= 180 || rightvel >= 180){ // check if either left or right motor is at top speed
+          } else if(leftvel <= 0 || rightvel <= 0){ // check if either left or right motor is at top speed
             Serial.println("Car cannot increase speed without changing turning radius");
           } else {
-            leftvel += 9; // increase speed by 1/10 of max
-            rightvel += 9;
-            if(leftvel > 180){ // check if the increase was too much
-              rightvel -= (leftvel - 180); // preserve the speed differential between the two motors
+            leftvel -= 9; // increase speed by 1/10 of max
+            rightvel -= 9;
+            if(leftvel < 0){ // check if the increase was too much
+              rightvel -= leftvel; // preserve the speed differential between the two motors
             }
-            if(rightvel > 180){ // check if the increase was too much
-              leftvel -= (rightvel - 180); // preserve the speed differential between the two motors
+            if(rightvel < 0){ // check if the increase was too much
+              leftvel -= rightvel; // preserve the speed differential between the two motors
             }
             if(leftvel < 0) leftvel = 0;
             if(rightvel < 0) rightvel = 0;
@@ -238,7 +239,7 @@ void loop(void)
             if(leftvel == 90 || rightvel == 90||(leftvel < 90 && rightvel > 90)||(leftvel > 90 && rightvel < 90)){ // this means that there is no forward/ backward momentum
               velocity = 0; // the car is just turning in place
             } else {
-              velocity = (((leftvel + rightvel) / 2.0) - 90) / 9;
+              velocity = ((180 - ((leftvel + rightvel) / 2.0)) - 90) / 9;
             }
             left.write(leftvel);
             right.write(rightvel);
@@ -249,17 +250,17 @@ void loop(void)
           Serial.println(" pressed.");
           if((velocity) <= -10){ // check if the car is at top reverse speed
             Serial.println("Car cannot reverse any faster");
-          } else if(leftvel <= 0 || rightvel <= 0){ // check if either left or right motor is at reverse speed
+          } else if(leftvel >= 180 || rightvel >= 180){ // check if either left or right motor is at reverse speed
             Serial.println("Car cannot increase speed without changing turning radius");
           } else {
-            leftvel -= 9; // decrease speed by 1/10 of max
-            rightvel -= 9;
-            if(leftvel < 0){ // check if the decrease was too much
-              rightvel -= leftvel; // preserve the speed differential between the two motors
+            leftvel += 9; // decrease speed by 1/10 of max
+            rightvel += 9;
+            if(leftvel > 180){ // check if the decrease was too much
+              rightvel -= (leftvel - 180); // preserve the speed differential between the two motors
             }
-            if(rightvel < 0){ // check if the decrease was too much
-              leftvel -= rightvel; // preserve the speed differential between the two motors
-            }
+            if(rightvel > 180){ // check if the decrease was too much
+              leftvel -= (rightvel - 180); // preserve the speed differential between the two motors
+            }            
             if(leftvel < 0) leftvel = 0;
             if(rightvel < 0) rightvel = 0;
             if(leftvel > 180) leftvel = 180;
@@ -267,7 +268,7 @@ void loop(void)
             if(leftvel == 90 || rightvel == 90||(leftvel < 90 && rightvel > 90)||(leftvel > 90 && rightvel < 90)){ // this means that there is no forward/ backward momentum
               velocity = 0; // the car is just turning in place
             } else {
-              velocity = (((leftvel + rightvel) / 2.0) - 90) / 9;
+              velocity = ((180 - ((leftvel + rightvel) / 2.0)) - 90) / 9;
             }
             left.write(leftvel);
             right.write(rightvel);
@@ -276,13 +277,13 @@ void loop(void)
           break;
         case 7: //left
           Serial.println(" pressed.");
-          if(leftvel < 172){
-            leftvel += 9;
-          } else if (leftvel >= 180){
-            rightvel -= 9;
+          if(leftvel > 8){
+            leftvel -= 9;
+          } else if (leftvel <= 0){
+            rightvel += 9;
           } else {
-            leftvel += 9;
-            rightvel -= (leftvel - 180);
+            leftvel -= 9;
+            rightvel -= leftvel;
           }
           if(leftvel < 0) leftvel = 0;
           if(rightvel < 0) rightvel = 0;
@@ -291,9 +292,9 @@ void loop(void)
           if(leftvel == 90 || rightvel == 90||(leftvel < 90 && rightvel > 90)||(leftvel > 90 && rightvel < 90)){ // this means that there is no forward/ backward momentum
             velocity = 0; // the car is just turning in place
           } else {
-            velocity = (((leftvel + rightvel) / 2.0) - 90) / 9; // 
+            velocity = ((180 - ((leftvel + rightvel) / 2.0)) - 90) / 9; 
           }
-          angle = ((rightvel - 90) - (leftvel - 90)) / 9.0;
+          angle = ((90 - rightvel) - (90 - leftvel)) / 9.0;
           left.write(leftvel);
           right.write(rightvel);
           Serial.print("Velocity now "); Serial.println(velocity, 2);
@@ -301,13 +302,13 @@ void loop(void)
           break;
         case 8: //right
           Serial.println(" pressed.");
-          if(rightvel < 172){
-            rightvel += 9;
-          } else if (rightvel >= 180){
-            leftvel -= 9;
+          if(rightvel > 8){
+            rightvel -= 9;
+          } else if (rightvel <= 0){
+            leftvel += 9;
           } else {
-            rightvel += 9;
-            leftvel -= (rightvel - 180);
+            rightvel -= 9;
+            leftvel -= rightvel;
           }
           if(leftvel < 0) leftvel = 0;
           if(rightvel < 0) rightvel = 0;
@@ -316,9 +317,9 @@ void loop(void)
           if(leftvel == 90 || rightvel == 90||(leftvel < 90 && rightvel > 90)||(leftvel > 90 && rightvel < 90)){ // this means that there is no forward/ backward momentum
             velocity = 0; // the car is just turning in place
           } else {
-            velocity = (((leftvel + rightvel) / 2.0) - 90) / 9; // 
+            velocity = ((180 - ((leftvel + rightvel) / 2.0)) - 90) / 9;
           }
-          angle = ((rightvel - 90) - (leftvel - 90)) / 9.0;
+          angle = ((90 - rightvel) - (90 - leftvel)) / 9.0;
           left.write(leftvel);
           right.write(rightvel);
           Serial.print("Velocity now "); Serial.println(velocity, 2);
@@ -339,9 +340,9 @@ void loop(void)
           angle = 0;
           if(velocity < -10) velocity = -10;
           if(velocity > 10) velocity = 10;
-          rightvel = roundf((velocity * 9) + 90);
+          rightvel = roundf(90 - (velocity * 9));
           leftvel = rightvel;
-          velocity = (rightvel - 90) / 9.0;
+          velocity = (90 - rightvel) / 9.0;
           left.write(leftvel);
           right.write(rightvel);
           Serial.print("\nCar straightened out \nWheel angle now "); Serial.println(angle, 2);
